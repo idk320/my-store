@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>My Store</title>
+  <script src="https://www.paypal.com/sdk/js?client-id=AbXx06CWaG07IFwEStzQG6ZfYpKW87zdDz15n5b5bV5oSZz76TaSUV-YQfVeFZcw0RqQGc54JmXq-pps&currency=USD"></script>
+  <style>
+    body { font-family: Arial; }
+    .product { border: 1px solid #ccc; padding: 10px; margin: 10px; }
+    #cart { border-top: 2px solid black; padding-top: 10px; }
+  </style>
+</head>
+<body>
+
+<h1>Welcome to My Store</h1>
+
+<div id="products">
+  <div class="product">
+    <h3>Product A</h3>
+    <p>$25</p>
+    <button onclick="addToCart('Product A', 25)">Add to Cart</button>
+  </div>
+  <div class="product">
+    <h3>Product B</h3>
+    <p>$40</p>
+    <button onclick="addToCart('Product B', 40)">Add to Cart</button>
+  </div>
+</div>
+
+<div id="cart">
+  <h2>Your Cart</h2>
+  <div id="cartItems"></div>
+  <p id="total"></p>
+  <div id="paypal-button-container"></div>
+</div>
+
+<script>
+let cart = [];
+let total = 0;
+
+function addToCart(name, price) {
+  cart.push({ name, price });
+  renderCart();
+}
+
+function renderCart() {
+  const cartItemsDiv = document.getElementById('cartItems');
+  cartItemsDiv.innerHTML = "";
+  total = 0;
+  cart.forEach(item => {
+    cartItemsDiv.innerHTML += `<p>${item.name} - $${item.price}</p>`;
+    total += item.price;
+  });
+  document.getElementById('total').innerText = `Total: $${total}`;
+}
+
+paypal.Buttons({
+  createOrder: function(data, actions) {
+    return actions.order.create({
+      purchase_units: [{
+        amount: { value: total.toString() }
+      }]
+    });
+  },
+  onApprove: function(data, actions) {
+    return actions.order.capture().then(function(details) {
+      alert('Transaction completed by ' + details.payer.name.given_name);
+      cart = [];
+      renderCart();
+    });
+  }
+}).render('#paypal-button-container');
+
+</script>
+
+</body>
+</html>
